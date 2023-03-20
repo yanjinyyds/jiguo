@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xt.jiguo.dao.GuideDao">
+  <resultMap id="BaseResultMap" type="com.xt.jiguo.entity.Guide">
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="title" jdbcType="VARCHAR" property="title" />
+    <result column="image" jdbcType="VARCHAR" property="image" />
+    <result column="issue_date" jdbcType="DATE" property="issueDate" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    id, title, image, issue_date
+  </sql>
+  <resultMap id="civom" type="GuideVo" extends="BaseResultMap">
+    <result column="ccnt" property="commentCount"/>
+    <result column="tcnt" property="thumbCount"/>
+  </resultMap>
+  <select id="selectByOrder" resultMap="civom">
+    select ci.*, tcnt, ccnt
+    from jg_guide ci
+    left join (select guide_id,count(1) tcnt from jg_guide_thumb group by guide_id) jcit
+    on ci.id=jcit.guide_id
+    left join (select guide_id,count(1) ccnt from jg_guide_comment group by guide_id) jcic
+    on ci.id=jcic.guide_id
+    <if test="order=='hot'">
+      order by tcnt desc
+    </if>
+    <if test="order==null || order!='hot'">
+      order by ci.id desc
+    </if>
+
+  </select>
+
+
+
+  <select id="selectItems" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List">
+    </include>
+    from jg_guide
+    order by id desc
+  </select>
+
+  <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from jg_guide
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+    delete from jg_guide
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+
+  <insert id="insert" parameterType="com.xt.jiguo.entity.Guide">
+    insert into jg_guide (title, image,
+      issue_date)
+    values (#{title,jdbcType=VARCHAR}, #{image,jdbcType=VARCHAR},
+      current_date())
+  </insert>
+
+  <insert id="insertSelective" parameterType="com.xt.jiguo.entity.Guide">
+    insert into jg_guide
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        id,
+      </if>
+      <if test="title != null">
+        title,
+      </if>
+      <if test="image != null">
+        image,
+      </if>
+      <if test="issueDate != null">
+        issue_date,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="title != null">
+        #{title,jdbcType=VARCHAR},
+      </if>
+      <if test="image != null">
+        #{image,jdbcType=VARCHAR},
+      </if>
+      <if test="issueDate != null">
+        #{issueDate,jdbcType=DATE},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.xt.jiguo.entity.Guide">
+    update jg_guide
+    <set>
+      <if test="title != null">
+        title = #{title,jdbcType=VARCHAR},
+      </if>
+      <if test="image != null">
+        image = #{image,jdbcType=VARCHAR},
+      </if>
+      <if test="issueDate != null">
+        issue_date = #{issueDate,jdbcType=DATE},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.xt.jiguo.entity.Guide">
+    update jg_guide
+    set title = #{title,jdbcType=VARCHAR},
+      image = #{image,jdbcType=VARCHAR},
+      issue_date = #{issueDate,jdbcType=DATE}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+</mapper>

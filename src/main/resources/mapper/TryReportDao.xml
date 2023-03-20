@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xt.jiguo.dao.TryReportDao">
+  <resultMap id="BaseResultMap" type="com.xt.jiguo.entity.TryReport">
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="title" jdbcType="VARCHAR" property="title" />
+    <result column="image" jdbcType="VARCHAR" property="image" />
+    <result column="apply_id" jdbcType="INTEGER" property="applyId" />
+    <result column="pub_date" jdbcType="DATE" property="pubDate" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    id, title, image, apply_id, pub_date
+  </sql>
+
+  <select id="selectCountById" parameterType="int" resultType="int">
+    select  count(1) from jg_try_report
+    where apply_id in (
+      select id from jg_try_apply
+      where item_id=#{id})
+  </select>
+  <select id="selectCountByReportId" parameterType="int" resultType="int">
+    select  count(1) from jg_try_report
+    where apply_id in (
+      select  apply_id from jg_try_apply
+      where item_id=(
+        select item_id from jg_try_apply
+        where id=(
+          select apply_id
+          from jg_try_report
+          where id=#{id}
+          )
+        )
+      )
+  </select>
+
+
+<resultMap id="trvom" type="TryReportVo" extends="BaseResultMap">
+  <result column="tcnt" property="thumbCount"/>
+  <association property="commentCount" javaType="java.lang.Integer" column="id" select="com.xt.jiguo.dao.ReportCommentDao.selectCountById"/>
+  <association property="reportCount" javaType="java.lang.Integer" column="id" select="com.xt.jiguo.dao.TryReportDao.selectCountByReportId"/>
+  <association property="itemName" javaType="java.lang.String" column="apply_id" select="com.xt.jiguo.dao.TryItemDao.selectNameByApplyId"/>
+  <association property="author" javaType="com.xt.jiguo.entity.User" column="apply_id" select="com.xt.jiguo.dao.UserDao.selectByApplyId"/>
+
+</resultMap>
+  <select id="selectByOrder" resultMap="trvom">
+    select  tr.*,tcnt
+    from jg_try_report tr
+    left join (select report_id,count(1) tcnt from jg_report_thumb group by report_id) jcit
+    on tr.id=jcit.report_id
+    <if test="order=='hot'">
+      order by tcnt desc
+    </if>
+    <if test="order==null || order!='hot'">
+      order by tr.id desc
+    </if>
+  </select>
+
+  <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from jg_try_report
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+    delete from jg_try_report
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.xt.jiguo.entity.TryReport">
+    insert into jg_try_report (id, title, image, 
+      apply_id, pub_date)
+    values (#{id,jdbcType=INTEGER}, #{title,jdbcType=VARCHAR}, #{image,jdbcType=VARCHAR}, 
+      #{applyId,jdbcType=INTEGER}, #{pubDate,jdbcType=DATE})
+  </insert>
+  <insert id="insertSelective" parameterType="com.xt.jiguo.entity.TryReport">
+    insert into jg_try_report
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        id,
+      </if>
+      <if test="title != null">
+        title,
+      </if>
+      <if test="image != null">
+        image,
+      </if>
+      <if test="applyId != null">
+        apply_id,
+      </if>
+      <if test="pubDate != null">
+        pub_date,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="title != null">
+        #{title,jdbcType=VARCHAR},
+      </if>
+      <if test="image != null">
+        #{image,jdbcType=VARCHAR},
+      </if>
+      <if test="applyId != null">
+        #{applyId,jdbcType=INTEGER},
+      </if>
+      <if test="pubDate != null">
+        #{pubDate,jdbcType=DATE},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.xt.jiguo.entity.TryReport">
+    update jg_try_report
+    <set>
+      <if test="title != null">
+        title = #{title,jdbcType=VARCHAR},
+      </if>
+      <if test="image != null">
+        image = #{image,jdbcType=VARCHAR},
+      </if>
+      <if test="applyId != null">
+        apply_id = #{applyId,jdbcType=INTEGER},
+      </if>
+      <if test="pubDate != null">
+        pub_date = #{pubDate,jdbcType=DATE},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.xt.jiguo.entity.TryReport">
+    update jg_try_report
+    set title = #{title,jdbcType=VARCHAR},
+      image = #{image,jdbcType=VARCHAR},
+      apply_id = #{applyId,jdbcType=INTEGER},
+      pub_date = #{pubDate,jdbcType=DATE}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+</mapper>

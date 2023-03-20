@@ -1,0 +1,31 @@
+spring:
+  datasource:
+    driver-class-name: com.mysql.jdbc.Driver
+    url: jdbc:mysql://master:8066/jiguo?useUnicode=true&characterEncoding=utf8
+    username: root
+    password: 123456
+    type: com.alibaba.druid.pool.DruidDataSource
+    druid:
+      initial-size: 5
+      max-wait: 10000
+      max-active: 10
+  messages:
+    basename: messages
+
+
+
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: com.xt.jiguo.entity
+  configuration:
+    log-impl: org.apache.ibatis.logging.log4j.Log4jImpl
+
+pagehelper:
+  helper-dialect: mysql
+  reasonable: true
+
+server:
+  port: 9000
+
+
+
